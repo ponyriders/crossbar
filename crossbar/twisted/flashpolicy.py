@@ -82,7 +82,7 @@ class FlashPolicyProtocol(Protocol):
             self.dropConnection = None
 
     def dataReceived(self, data):
-        self.received += data
+        self.received += data.decode()
         if FlashPolicyProtocol.REQUESTPAT.match(self.received):
             # got valid request: send policy file
             ##
