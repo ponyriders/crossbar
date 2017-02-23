@@ -82,12 +82,18 @@ class FlashPolicyProtocol(Protocol):
             self.dropConnection = None
 
     def dataReceived(self, data):
-        self.received += data.decode('utf-8')
+        # cast bytes and unicode as str
+        if isinstance(data, bytes):
+            data = data.decode('utf-8')
+        self.received += data
+
         if FlashPolicyProtocol.REQUESTPAT.match(self.received):
             # got valid request: send policy file
             ##
-            self.transport.write(FlashPolicyProtocol.POLICYFILE % (self._allowedDomain, self._allowedPorts))
+            flash_policy_content = FlashPolicyProtocol.POLICYFILE % (self._allowedDomain, self._allowedPorts)
+            self.transport.write(bytes(flash_policy_content, 'utf-8'))
             self.transport.loseConnection()
+
         elif len(self.received) > FlashPolicyProtocol.REQUESTMAXLEN:
             # possible DoS attack
             ##
@@ -96,7 +102,6 @@ class FlashPolicyProtocol(Protocol):
             # need more data
             ##
             pass
-
 
 class FlashPolicyFactory(Factory):
 
